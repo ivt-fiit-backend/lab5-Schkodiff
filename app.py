@@ -11,6 +11,10 @@ with open('awards.json', encoding='utf-8') as f:
     awards = json.load(f)
 
 # TODO: Добавить код для чтения лауреатов из файла
+with open('laureats.json', encoding='utf-8') as f:
+    laureats = json.load(f)
+
+laureats_id = {v['id']: k for k, v in enumerate(laureats)}
 
 
 @app.route("/api/v1/awards/")
@@ -34,6 +38,30 @@ def awards_list():
 def award_object(pk):
     if 0 <= pk < len(awards):
         return jsonify(awards[pk])
+    else:
+        abort(404)
+
+@app.route("/api/v1/laureats/")
+def laureats_list():
+    try:
+        p = int(request.args.get('p', 0))
+        if p < 0:
+            raise ValueError
+    except ValueError:
+        return abort(400)
+    page = laureats[p * 50:(p + 1)*50]
+    return jsonify({
+        'page': p,
+        'count_on_page': PAGE_SIZE,
+        'total': len(laureats),
+        'items': page,
+    })
+
+
+@app.route("/api/v1/laureat/<id>/")
+def laureat_object(id):
+    if id in laureats_id:
+        return jsonify(laureats[laureats_id[id]])
     else:
         abort(404)
 
